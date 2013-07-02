@@ -42,7 +42,7 @@ aufs:
 	modprobe aufs || apt-get install -y linux-image-extra-`uname -r`
 
 stack:
-	curl ${STACK_URL} | gunzip -cd | docker import - progrium/buildstep
+	docker images | grep progrium/buildstep || curl ${STACK_URL} | gunzip -cd | docker import - progrium/buildstep
 
 count:
 	@echo "Core lines:"
