@@ -6,11 +6,13 @@ STACK_URL = https://s3.amazonaws.com/progrium-dokku/progrium_buildstep.tgz
 
 all: install-all
 
-install-all: dependencies stack install
+install-all: dependencies stack install plugins
 
-install: pluginhook gitreceive
+install:
 	cp dokku /usr/local/bin/dokku
 	cp receiver /home/git/receiver
+
+plugins: pluginhook docker
 	mkdir -p /var/lib/dokku/plugins
 	cp -r plugins/* /var/lib/dokku/plugins
 	dokku plugins
@@ -18,17 +20,18 @@ install: pluginhook gitreceive
 dependencies: gitreceive sshcommand pluginhook docker stack
 
 gitreceive:
-	which gitreceive || wget -qO /usr/local/bin/gitreceive ${GITRECEIVE_URL}
+	wget -qO /usr/local/bin/gitreceive ${GITRECEIVE_URL}
 	chmod +x /usr/local/bin/gitreceive
-	gitreceive init
+	test -f /home/git/receiver || gitreceive init
 
 sshcommand:
-	which sshcommand || wget -qO /usr/local/bin/sshcommand ${SSHCOMMAND_URL}
+	wget -qO /usr/local/bin/sshcommand ${SSHCOMMAND_URL}
 	chmod +x /usr/local/bin/sshcommand
 	sshcommand create dokku /usr/local/bin/dokku
 
 pluginhook:
-	which pluginhook || wget -qO /tmp/pluginhook_0.1.0_amd64.deb ${PLUGINHOOK_URL} && dpkg -i /tmp/pluginhook_0.1.0_amd64.deb
+	wget -qO /tmp/pluginhook_0.1.0_amd64.deb ${PLUGINHOOK_URL}
+	dpkg -i /tmp/pluginhook_0.1.0_amd64.deb
 
 docker: aufs
 	wget -qO /tmp/lxc-docker_0.4.2-1_amd64.deb ${DOCKER_URL}
